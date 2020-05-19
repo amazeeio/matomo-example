@@ -54,7 +54,7 @@ services:
     environment:
       << : *default-environment # loads the defined environment variables from the top
 
-  matomo_database:
+  matomo-database:
     image: amazeeio/mariadb
     labels:
       lagoon.type: mariadb
