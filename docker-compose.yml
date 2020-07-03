@@ -35,6 +35,7 @@ services:
     labels:
       # Lagoon Labels
       lagoon.type: cli-persistent
+      lagoon.persistent.name: nginx # mount the persistent storage of nginx into this container
       lagoon.persistent: /persistent/ # location where the persistent storage should be mounted
     << : *default-volumes # loads the defined volumes from the top
     user: root
