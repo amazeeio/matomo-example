@@ -4,13 +4,21 @@ x-lagoon-project:
   # Lagoon project name (leave `&lagoon-project` when you edit this)
   &lagoon-project matomo-example
 
+x-volumes:
+  &default-volumes
+    # Define all volumes you would like to have real-time mounted into the docker containers
+    volumes:
+      - ./persistent:/persistent:delegated
+
 x-environment:
   &default-environment
     LAGOON_PROJECT: *lagoon-project
     # Route that should be used locally, if you are using pygmy, this route *must* end with .docker.amazee.io
-    LAGOON_ROUTE: http://matomo-example.docker.amazee.io
+    LAGOON_ROUTE: https://matomo-example.docker.amazee.io
     # Uncomment if you like to have the system behave like in production
     #LAGOON_ENVIRONMENT_TYPE: production
+    # Uncomment to enable xdebug and then restart via `docker-compose up -d`
+    #XDEBUG_ENABLE: "true"
 
 x-user:
   &default-user
@@ -19,13 +27,35 @@ x-user:
 
 services:
 
+  cli: # cli container, will be used for executing commands
+    build:
+      context: .
+      dockerfile: cli.dockerfile
+    image: *lagoon-project # this image will be reused as `CLI_IMAGE` in subsequent Docker builds
+    labels:
+      # Lagoon Labels
+      lagoon.type: cli-persistent
+      lagoon.persistent: /persistent/ # location where the persistent storage should be mounted
+    << : *default-volumes # loads the defined volumes from the top
+    user: root
+    volumes_from: # mount the ssh-agent from the pygmy or cachalot ssh-agent
+      - container:amazeeio-ssh-agent
+    environment:
+      << : *default-environment # loads the defined environment variables from the top
+
   nginx:
     build:
       context: .
       dockerfile: nginx.dockerfile
+      args:
+        CLI_IMAGE: *lagoon-project # Inject the name of the cli image
     labels:
-      lagoon.type: nginx-php
+      lagoon.type: nginx-php-persistent
+      lagoon.persistent: /persistent/ # location where the persistent storage should be mounted
+    << : *default-volumes # loads the defined volumes from the top
     << : *default-user # uses the defined user from top
+    depends_on:
+      - cli # basically just tells docker-compose to build the cli first
     environment:
       << : *default-environment # loads the defined environment variables from the top
     networks:
@@ -35,13 +65,20 @@ services:
   php:
     build:
       context: .
-      dockerfile: matomo.dockerfile
+      dockerfile: php.dockerfile
+      args:
+        CLI_IMAGE: *lagoon-project
     labels:
-      lagoon.type: nginx-php
+      lagoon.type: nginx-php-persistent
+      lagoon.persistent: /persistent/ # location where the persistent storage should be mounted
       lagoon.name: nginx # we want this service be part of the nginx pod in Lagoon
+    << : *default-volumes # loads the defined volumes from the top
     << : *default-user # uses the defined user from top
+    depends_on:
+      - cli # basically just tells docker-compose to build the cli first
     environment:
       << : *default-environment # loads the defined environment variables from the top
+
 
   matomo-database:
     image: amazeeio/mariadb
@@ -53,9 +90,7 @@ services:
     environment:
       << : *default-environment
 
+
 networks:
   amazeeio-network:
     external: true
-
-
-
