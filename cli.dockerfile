@@ -1,6 +1,6 @@
 FROM amazeeio/php:7.4-cli
 
-ENV MATOMO_VERSION 3.13.5
+ENV MATOMO_VERSION 3.13.6
 
 
 RUN set -ex; \
