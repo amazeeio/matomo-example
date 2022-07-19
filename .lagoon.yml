@@ -1,1 +1,17 @@
 docker-compose-yaml: docker-compose.yml
+
+tasks:
+  post-rollout:
+    - run:
+        name: matomo cache clear
+        command: /app/console cache:clear
+        service: cli
+
+environments:
+  master:
+    cronjobs:
+      # @see https://matomo.org/faq/on-premise/how-to-set-up-auto-archiving-of-your-reports/
+      - name: matomo core archive
+        schedule: "M * * * *"
+        command: /app/console core:archive --url=${LAGOON_ROUTE}/
+        service: cli
