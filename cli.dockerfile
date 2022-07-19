@@ -21,11 +21,12 @@ RUN set -ex; \
     apk del .fetch-deps
 
 RUN mkdir -p /persistent && \
-    fix-permissions /persistent
-
-# Allow the tracking file to be modified by Matomo. Used by plugins.
-RUN fix-permissions /app/matomo.js && \
-    chmod +w /app/matomo.js
+    fix-permissions /persistent && \
+    # Allow this directory to be writeable, to allow the geo-ip database to be
+    # downloaded.
+    fix-permissions /app/misc && chmod +w /app/misc && \
+    # Allow the tracking file to be modified by Matomo. Used by plugins.
+    fix-permissions /app/matomo.js && chmod +w /app/matomo.js
 
 COPY bootstrap.php /app/bootstrap.php
 COPY 90-matomo-envs.sh  /lagoon/entrypoints/
