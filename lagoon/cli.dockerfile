@@ -1,6 +1,7 @@
-FROM uselagoon/php-8.1-cli:latest
+FROM uselagoon/php-8.3-cli:latest
 
-ENV MATOMO_VERSION 4.10.1
+# @see https://github.com/matomo-org/matomo/releases
+ENV MATOMO_VERSION 5.0.3
 
 RUN set -ex; \
     apk add --no-cache --virtual .fetch-deps \
@@ -28,11 +29,5 @@ RUN mkdir -p /persistent && \
     # Allow the tracking file to be modified by Matomo. Used by plugins.
     fix-permissions /app/matomo.js && chmod +w /app/matomo.js
 
-COPY bootstrap.php /app/bootstrap.php
-COPY 90-matomo-envs.sh  /lagoon/entrypoints/
-
-ENV MATOMO_DATABASE_HOST=matomo-database \
-    MATOMO_DATABASE_USERNAME=lagoon \
-    MATOMO_DATABASE_PASSWORD=lagoon \
-    MATOMO_DATABASE_DATABASE=lagoon \
-    MATOMO_DATABASE_TABLES_PREFIX=matomo_
+COPY ./lagoon/bootstrap.php /app/bootstrap.php
+COPY ./lagoon/90-matomo-envs.sh  /lagoon/entrypoints/

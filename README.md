@@ -8,4 +8,4 @@
 ## start
 
 1. `docker-compose up -d --build`
-2. visit https://matomo-example.docker.amazee.io (this will throw a certificate issue, just accept it in your browser)
+2. visit http://matomo-example.docker.amazee.io

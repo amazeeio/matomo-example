@@ -3,7 +3,7 @@ FROM ${CLI_IMAGE} as cli
 
 FROM uselagoon/nginx:latest
 
-COPY nginx.conf /etc/nginx/conf.d/app.conf
+COPY ./lagoon/nginx.conf /etc/nginx/conf.d/app.conf
 
 RUN fix-permissions /etc/nginx/conf.d/app.conf
 
